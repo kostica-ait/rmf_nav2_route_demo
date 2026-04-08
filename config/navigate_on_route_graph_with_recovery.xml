@@ -1,0 +1,62 @@
+<!--
+  Jazzy-compatible adaptation of the Rolling route BT.
+  Rolling-only first-mile / last-mile helper nodes are removed in favor of the
+  supported ComputeRoute + ComputeAndTrackRoute execution pattern.
+-->
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <ControllerSelector selected_controller="{selected_controller}" default_controller="FollowPath" topic_name="controller_selector"/>
+        <PlannerSelector selected_planner="{selected_planner}" default_planner="GridBased" topic_name="planner_selector"/>
+
+        <RateController hz="1.0" name="ComputeRouteRateController">
+          <RecoveryNode number_of_retries="1" name="ComputeRoute">
+            <ComputeRoute goal="{goal}" use_poses="true" path="{path}" error_code_id="{compute_path_error_code}"/>
+            <Sequence>
+              <WouldAPlannerRecoveryHelp error_code="{compute_path_error_code}"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </Sequence>
+          </RecoveryNode>
+        </RateController>
+
+        <RecoveryNode number_of_retries="1" name="TrackRouteAndFollowPath">
+          <Parallel success_count="1" failure_count="1">
+            <ComputeAndTrackRoute goal="{goal}" use_poses="true" path="{path}" error_code_id="{compute_path_error_code}"/>
+            <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
+          </Parallel>
+          <Sequence>
+            <Fallback>
+              <Sequence>
+                <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+                <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+              </Sequence>
+              <AlwaysSuccess/>
+            </Fallback>
+            <ComputeRoute goal="{goal}" use_poses="true" path="{path}" error_code_id="{compute_path_error_code}"/>
+          </Sequence>
+        </RecoveryNode>
+      </PipelineSequence>
+
+      <Sequence>
+        <Fallback>
+          <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+          <WouldAPlannerRecoveryHelp error_code="{compute_path_error_code}"/>
+          <AlwaysSuccess/>
+        </Fallback>
+        <ReactiveFallback name="RecoveryFallback">
+          <GoalUpdated/>
+          <RoundRobin name="RecoveryActions">
+            <Sequence name="ClearingActions">
+              <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </Sequence>
+            <Wait wait_duration="5.0"/>
+            <BackUp backup_dist="0.30" backup_speed="0.15" error_code_id="{backup_code_id}"/>
+          </RoundRobin>
+        </ReactiveFallback>
+        <ComputeRoute goal="{goal}" use_poses="true" path="{path}" error_code_id="{compute_path_error_code}"/>
+      </Sequence>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

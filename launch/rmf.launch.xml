@@ -1,0 +1,20 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="server_uri" default="" description="Optional rmf-web API server URI"/>
+
+  <include file="$(find-pkg-share free_fleet_examples)/turtlebot3_world_rmf_common.launch.xml">
+    <arg name="server_uri" value="$(var server_uri)"/>
+  </include>
+
+  <include file="$(find-pkg-share free_fleet_examples)/nav2_tb3_simulation_fleet_adapter.launch.xml">
+    <arg name="server_uri" value="$(var server_uri)"/>
+  </include>
+
+	<include file="$(find-pkg-share rmf_visualization)/visualization.launch.xml">
+		<arg name="use_sim_time" value="false"/>
+		<arg name="map_name" value="L1"/>
+		<arg name="viz_config_file" value ="$(find-pkg-share rmf_nav2_route_demo)/config/rmf.rviz"/>
+		<arg name="headless" value="false"/>
+	</include>
+</launch>
