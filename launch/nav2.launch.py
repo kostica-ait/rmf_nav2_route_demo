@@ -15,7 +15,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from nav2_common.launch import RewrittenYaml
@@ -53,4 +53,18 @@ def generate_launch_description():
         }.items(),
     )
 
-    return LaunchDescription([headless_arg, nav2_launch])
+    rmw_implementation = SetEnvironmentVariable(
+        'RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'
+    )
+    nav2_domain = SetEnvironmentVariable('ROS_DOMAIN_ID', '0')
+    localhost_only = SetEnvironmentVariable('ROS_LOCALHOST_ONLY', '1')
+    local_discovery = SetEnvironmentVariable('ROS_AUTOMATIC_DISCOVERY_RANGE', 'LOCALHOST')
+
+    return LaunchDescription([
+        rmw_implementation,
+        nav2_domain,
+        localhost_only,
+        local_discovery,
+        headless_arg,
+        nav2_launch,
+    ])

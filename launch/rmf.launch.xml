@@ -3,6 +3,11 @@
 <launch>
   <arg name="server_uri" default="" description="Optional rmf-web API server URI"/>
 
+  <set_env name="RMW_IMPLEMENTATION" value="rmw_cyclonedds_cpp"/>
+  <set_env name="ROS_DOMAIN_ID" value="$(env ROS_DOMAIN_ID 55)"/>
+  <set_env name="ROS_LOCALHOST_ONLY" value="1"/>
+  <set_env name="ROS_AUTOMATIC_DISCOVERY_RANGE" value="LOCALHOST"/>
+
   <include file="$(find-pkg-share free_fleet_examples)/turtlebot3_world_rmf_common.launch.xml">
     <arg name="server_uri" value="$(var server_uri)"/>
   </include>
@@ -10,11 +15,4 @@
   <include file="$(find-pkg-share free_fleet_examples)/nav2_tb3_simulation_fleet_adapter.launch.xml">
     <arg name="server_uri" value="$(var server_uri)"/>
   </include>
-
-	<include file="$(find-pkg-share rmf_visualization)/visualization.launch.xml">
-		<arg name="use_sim_time" value="false"/>
-		<arg name="map_name" value="L1"/>
-		<arg name="viz_config_file" value ="$(find-pkg-share rmf_nav2_route_demo)/config/rmf.rviz"/>
-		<arg name="headless" value="false"/>
-	</include>
 </launch>
