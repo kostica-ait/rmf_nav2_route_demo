@@ -29,8 +29,8 @@ amcl:
     save_pose_rate: 0.5
     set_initial_pose: true
     initial_pose:
-      x: -1.6000019311904907
-      y: -0.5031192898750305
+      x: -2.0
+      y: -0.5
       z: 0.0
       yaw: 0.0
     sigma_hit: 0.2
