@@ -8,10 +8,10 @@
   },
   scouting: {
     multicast: {
-      enabled: false,
+      enabled: true,
     },
     gossip: {
-      enabled: false,
+      enabled: true,
     },
   },
 }
